@@ -1,0 +1,34 @@
+#!/bin/bash
+if [ -z "$1" ]
+then
+    echo "Please provide a name for the app"
+    exit 1
+fi
+
+echo "creating vite ts app " "$1"
+
+git clone https://github.com/DKormann/template_appy.git
+
+mv template_appy "$1"
+
+cd "$1"
+
+rm -rf .git
+
+find . -type f -exec sh -c "LC_CTYPE=C sed -i '' \"s/template_appy/$1/g\" {}" \;
+
+npm install .
+
+# code .
+
+# npm run dev
+
+
+git init .
+
+touch .git/hooks/pre-commit
+
+echo "npm run build" >> .git/hooks/pre-commit
+
+chmod +x .git/hooks/pre-commit
+
