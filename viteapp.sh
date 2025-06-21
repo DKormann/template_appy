@@ -21,6 +21,10 @@ npm install .
 
 git init .
 
+git remote add origin https://github.com/$(git config github.user)/$1.git
+git push -u origin main
+
+
 
 echo "live development: npm run dev"
 echo "to build run: npm run build"
