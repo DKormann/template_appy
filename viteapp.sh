@@ -19,16 +19,8 @@ find . -type f -exec sh -c "LC_CTYPE=C sed -i '' \"s/template_appy/$1/g\" {}" \;
 
 npm install .
 
-# code .
-
-# npm run dev
-
-
 git init .
 
-touch .git/hooks/pre-commit
 
-echo "npm run build" >> .git/hooks/pre-commit
-
-chmod +x .git/hooks/pre-commit
-
+echo "live development: npm run dev"
+echo "to build run: npm run build"
