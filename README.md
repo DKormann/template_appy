@@ -8,9 +8,9 @@ this will create a vite app with typescript
 
 just run this command in terminal: (need npm installed)
 
-`
+```
 source <(wget -qO- https://raw.githubusercontent.com/DKormann/template_appy/refs/heads/main/viteapp.sh) YOUR_APP_NAME
-`
+```
 
 inspect the script if you dont trust its v minimal
 
