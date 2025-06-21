@@ -22,3 +22,10 @@ the project will build into `/docs` which is perfect for gh-pages.
 ## hosting:
 just go to github repo > settings > pages and select host from branch main and from folder /docs 
 
+
+## development cycle:
+
+1. edit typescript in src folder 
+2. run `npm run dev` to see changes live
+3. run `npm run build` to build for gh-pages
+4. commit and push -> everything will be updated on your site
