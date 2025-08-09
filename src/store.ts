@@ -1,61 +1,64 @@
-// functional glue to persistant storage
-// only the main store is saved in the local storage of the browser
+export class Writable <T> {
+  private value: T
+  private listeners: Array<(value: T) => void> = []
 
-export type Store = {
-  get:(key:string)=>any|null,
-  set:(key:string, value:any)=>Store
-}
-
-class PersistantStore {
-  private _is_main:boolean
-  private _side_store:Map<string,string>|null
-  constructor(_is_main:boolean, _side_store:Map<string,string>|null){
-    this._is_main = _is_main
-    this._side_store = _side_store
+  constructor(initialValue: T) {
+    this.value = initialValue
   }
 
-  public get = (key:string):any|null =>{
-    const val:string = this._is_main? localStorage.getItem('sciepedia'+key) || 'null': this._side_store?.get(key) || 'null'
-    if (!this._is_main && !this._side_store) throw new Error('side store not initialized')
-    return JSON.parse(val)
+  get(): T {
+    return this.value
   }
 
-  public set = (key:string, value:any):PersistantStore =>{
-    const val = JSON.stringify(value, (k,v)=>k=='id'?undefined:v)
-    if (this._is_main){
-      localStorage.setItem('sciepedia'+key, val)
-      this._is_main = false
-      this._side_store = new Map()
-      return new PersistantStore(true, null)
+  set(newValue: T, force = false): void {
+    if (!force && newValue === this.value) return
+
+    for (const listener of this.listeners) {
+      listener(newValue)
     }
-    if (this._side_store){
-      console.error('WARNING: side store initialized')
-      const mapcopy = new Map(this._side_store)
-      return new PersistantStore(false, mapcopy.set(key, val))
-    } else throw new Error('side store not initialized')
+    this.value = newValue
+  }
+
+
+  update(updater: (value: T) => T, force = false): void {
+    const newValue = updater(this.value)
+    this.set(newValue, force)
+  }
+
+  subscribe(listener: (value: T) => void) {
+    this.listeners.push(listener)
+    listener(this.value)
+  }
+
+  subscribeLater(listener: (value: T) => void){
+    this.listeners.push(listener)
   }
 }
 
-class TestStore {
-  private _store:Map<string,any>
-  constructor(){
-    this._store = new Map()
+export class Stored<T> extends Writable<T> {
+  key: string
+  constructor(key:string, initialValue: T) {
+    if (localStorage.getItem(key) !== null) {
+      initialValue = JSON.parse(localStorage.getItem(key) as string) as T
+    }
+    super(initialValue)
+    this.key = key
   }
 
-  public get = (key:string):any|null =>{
-    return this._store.get(key) || null
-  }
-
-  public set = (key:string, value:any):TestStore =>{
-    const mapcopy = new Map(this._store)
-    return new TestStore().setStore(new Map(mapcopy.set(key, value)))
-  }
-
-  public setStore = (store:Map<string,any>):TestStore =>{
-    this._store = store
-    return this
+  set (newValue: T): void {
+    if (JSON.stringify(this.get()) !== JSON.stringify(newValue)) {
+      super.set(newValue)
+      localStorage.setItem(this.key, JSON.stringify(newValue))
+    }
   }
 }
 
-export const store:Store = new PersistantStore(true, null)
-export const teststore:Store = new TestStore()
+
+
+export interface Readable<T> {
+  get(): T
+  subscribe(listener: (value: T) => void): void
+  subscribeLater(listener: (value: T) => void): void
+}
+
+
