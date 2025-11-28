@@ -170,7 +170,6 @@ export const popup = (...cs:HTMLArg[])=>{
 }
 
 
-
 const body = document.body;
 
 export const show = (x:any)=>{
@@ -198,12 +197,13 @@ export const show = (x:any)=>{
         "[" + x.slice(0,3).map(y=>String(y)).join(",") + (x.length > 3 ? "..." : "") + "]",
         {
           onclick: () => {
-            ret.lastChild.replaceWith(span(
+            ret.lastChild.replaceWith(div(
               {style: {paddingLeft: "1em",}},
               resetter("["),
-              x.map(y=>parse(y)),
+              x.map(y=>p(parse(y))),
               resetter("]"),
             ))
+            ret.scrollIntoView()
           }
         }
       ))
@@ -219,23 +219,67 @@ export const show = (x:any)=>{
             ret.lastChild.replaceWith(div(
               {style: {paddingLeft: "1em",}},
               resetter("{"),
-              Object.entries(x).map(([key, value])=>p(key + ": ", parse(value))),
+              Object.entries(x).map(([key, value])=>p (key + ": ", parse(value))),
               resetter("}"),
             ))
+            ret.scrollIntoView()
           }
         }
       ))
     
     }else if (x instanceof Function) {
-      ret = span(String(x))
+      ret.appendChild(
+        span(String(x),
+        {
+          onclick: () => {
+
+            const res = div()
+
+            let inps = []
+            let win = (div(
+              {style: {fontFamily: "monospace"}},
+              p(String(x)),
+              res,
+            ))
+            const inp = () => {
+              let newinp = (input(
+                {
+                  onkeydown : (e) => {
+                    if (e.key == "Enter"){
+                      if (e.metaKey){
+                        console.log("meta key")
+                        inp()
+                      }else{
+                        let cll = `x(${inps.map(i=>i.value).join(", ")})`;
+                        res.innerHTML = ""
+                        try{
+                          res.appendChild(p(String(eval(cll))))
+                        }catch(e){
+                          res.appendChild(p(cll))
+                          res.appendChild(p(String(e)))
+                        }
+                      }
+                    }
+                  }
+                }
+              ))
+              win.appendChild(p(newinp))
+              newinp.focus()
+              inps.push(newinp)
+            }
+            popup(win)
+            inp()
+          }
+        }
+      ))
+
     }else if (typeof x == 'string') {
       typ = "";
       ret = span(x)
     }else {
       ret = span(String(x))
     }
-    
-    return div({
+    return span({
       style:{
         "fontFamily": "monospace",
       }},
@@ -252,8 +296,7 @@ export const show = (x:any)=>{
     )
   }
 
-  body.appendChild(parse(x))
+  body.appendChild(p(parse(x)))
 }
-
 
 
