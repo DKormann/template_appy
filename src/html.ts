@@ -168,3 +168,92 @@ export const popup = (...cs:HTMLArg[])=>{
   return popupbackground
 
 }
+
+
+
+const body = document.body;
+
+export const show = (x:any)=>{
+
+  const parse = (x: any) => {
+    let typ : string = typeof x;
+    let ret = span()
+
+    let resetter = (s:string) => p(
+      {
+        style: {
+          fontWeight: "lighter",
+          fontSize: "0.8em",
+          color: "#888",
+          marginRight: "0.5em",
+        },
+        onclick: () => ret.parentElement.replaceWith(parse(x))
+      },
+      s
+    )
+
+    if (x instanceof Array) {
+      typ = "array";
+      ret.appendChild(span(
+        "[" + x.slice(0,3).map(y=>String(y)).join(",") + (x.length > 3 ? "..." : "") + "]",
+        {
+          onclick: () => {
+            ret.lastChild.replaceWith(span(
+              {style: {paddingLeft: "1em",}},
+              resetter("["),
+              x.map(y=>parse(y)),
+              resetter("]"),
+            ))
+          }
+        }
+      ))
+
+    }else if (x instanceof HTMLElement){
+      typ = "htmlElement";
+      ret.appendChild(span(x.tagName, ": ", x.textContent .slice(0,10),))
+    }else if (typeof x == 'object') {
+      ret.appendChild(span(
+        "{" + Object.entries(x).slice(0,3).map(([key, value])=>key + ": " + String(value)).join(", ") + (Object.entries(x).length > 3 ? "..." : "") + "}", 
+        {
+          onclick: () => {
+            ret.lastChild.replaceWith(div(
+              {style: {paddingLeft: "1em",}},
+              resetter("{"),
+              Object.entries(x).map(([key, value])=>p(key + ": ", parse(value))),
+              resetter("}"),
+            ))
+          }
+        }
+      ))
+    
+    }else if (x instanceof Function) {
+      ret = span(String(x))
+    }else if (typeof x == 'string') {
+      typ = "";
+      ret = span(x)
+    }else {
+      ret = span(String(x))
+    }
+    
+    return div({
+      style:{
+        "fontFamily": "monospace",
+      }},
+      span({
+        style:{
+          fontWeight: "lighter",
+          fontSize: "0.8em",
+          color: "#888",
+          marginRight: "0.5em",
+        }
+      },
+      typ ? typ + ":" : "",),
+      ret
+    )
+  }
+
+  body.appendChild(parse(x))
+}
+
+
+

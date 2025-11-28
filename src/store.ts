@@ -1,3 +1,7 @@
+
+export type Serial = string | number | boolean | null | Serial [] | { [key: string]: Serial } | [Serial, Serial]
+
+
 export class Writable <T> {
   private value: Promise<T>
   public resolved: T
